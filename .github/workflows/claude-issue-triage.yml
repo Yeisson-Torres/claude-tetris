@@ -40,6 +40,9 @@ jobs:
                as the issue:
                gh issue comment ${{ github.event.issue.number }} --repo ${{ github.repository }} --body "..."
 
+               The comment body must be written in GitHub-flavored Markdown that GitHub can render properly
+               (headings/bold with "**", lists with "-", code spans with backticks, etc.).
+
                The comment must have these sections:
                - **Resumen**: one or two sentences restating the problem/request.
                - **Área afectada**: which part of game.js (board model, pieces/rotation, collision, game loop,
