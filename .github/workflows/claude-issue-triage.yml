@@ -1,0 +1,54 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Triage issue with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: '--allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*)"'
+          prompt: |
+            You are triaging GitHub issue #${{ github.event.issue.number }} in ${{ github.repository }}.
+
+            1. Read the issue: gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }}
+            2. Read CLAUDE.md and skim index.html, style.css, game.js to understand the architecture
+               (board model, pieces/rotation, collision, game loop, locking/clearing, scoring/leveling,
+               ghost piece, input handling).
+            3. List existing labels: gh label list --repo ${{ github.repository }}
+            4. Pick the most appropriate existing label(s) (e.g. bug, enhancement, question, documentation,
+               duplicate, invalid, help wanted, good first issue, accessibility, wontfix) and apply them with:
+               gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --add-label "<label>"
+               Only add labels that are missing; do not remove labels someone already set unless clearly wrong
+               (e.g. duplicate/invalid).
+            5. Post exactly ONE comment on the issue with a structured diagnosis, written in the same language
+               as the issue:
+               gh issue comment ${{ github.event.issue.number }} --repo ${{ github.repository }} --body "..."
+
+               The comment must have these sections:
+               - **Resumen**: one or two sentences restating the problem/request.
+               - **Área afectada**: which part of game.js (board model, pieces/rotation, collision, game loop,
+                 locking/clearing, scoring/leveling, ghost piece, input) or which file (index.html/style.css)
+                 is implicated, naming specific functions when possible.
+               - **Hipótesis de causa raíz**: your best technical read of why this happens (bug) or what it
+                 implies (feature request).
+               - **Enfoque sugerido**: a short, concrete plan for implementing the fix/feature later
+                 (no code yet, just the approach).
+               - **Preguntas abiertas**: anything needed from the reporter to proceed, or "Ninguna" if clear.
+            6. Do not write or modify any game code. Only read it for context, label the issue once, and post
+               the diagnosis comment once.
