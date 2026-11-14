@@ -15,6 +15,17 @@ const COLORS = [
   '#ffb74d', // L - orange
 ];
 
+const LIGHT_COLORS = [
+  null,
+  '#00acc1', // I
+  '#f9a825', // O
+  '#8e24aa', // T
+  '#43a047', // S
+  '#e53935', // Z
+  '#1e88e5', // J
+  '#fb8c00', // L
+];
+
 const PIECES = [
   null,
   [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
@@ -156,20 +167,28 @@ function updateHUD() {
   levelEl.textContent = level;
 }
 
+function isLight() {
+  return document.documentElement.dataset.theme === 'light';
+}
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
+  const color = (isLight() ? LIGHT_COLORS : COLORS)[colorIndex];
   context.globalAlpha = alpha ?? 1;
   context.fillStyle = color;
   context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
   // highlight
-  context.fillStyle = 'rgba(255,255,255,0.12)';
+  context.fillStyle = cssVar('--block-shine');
   context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
   context.globalAlpha = 1;
 }
 
 function drawGrid() {
-  ctx.strokeStyle = '#22222e';
+  ctx.strokeStyle = cssVar('--grid');
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -300,5 +319,23 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+
+const themeToggle = document.getElementById('theme-toggle');
+const themeText = document.getElementById('theme-text');
+
+function applyTheme(light) {
+  if (light) document.documentElement.dataset.theme = 'light';
+  else delete document.documentElement.dataset.theme;
+  themeToggle.setAttribute('aria-checked', String(light));
+  themeText.textContent = light ? 'Claro' : 'Oscuro';
+  if (board) { draw(); drawNext(); }
+}
+
+themeToggle.addEventListener('click', () => {
+  applyTheme(!isLight());
+  themeToggle.blur(); // evita que Space active el botón durante el juego
+});
+
+applyTheme(false); // oscuro por defecto
 
 init();
