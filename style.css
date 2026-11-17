@@ -235,6 +235,128 @@ kbd {
   outline-offset: 2px;
 }
 
+/* ---- Menú de pausa ---- */
+.pause-box {
+  gap: 10px;
+  min-width: 220px;
+}
+
+.pause-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.menu-btn {
+  width: 100%;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+.menu-btn:hover {
+  background: var(--accent-hover);
+}
+
+.menu-btn-secondary {
+  background: var(--kbd-bg);
+  color: var(--kbd-text);
+  border: 1px solid var(--kbd-border);
+}
+
+.menu-btn-secondary:hover {
+  background: var(--kbd-border);
+}
+
+.menu-btn:focus-visible,
+.pm-step:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.pm-controls {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-self: stretch;
+  padding: 4px 8px;
+}
+
+.pm-controls.hidden {
+  display: none;
+}
+
+.pm-controls li {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pm-level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.pm-level-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pm-step {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--kbd-border);
+  background: var(--kbd-bg);
+  color: var(--kbd-text);
+  font-size: 18px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.pm-step:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pm-step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pm-level-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 2ch;
+  text-align: center;
+}
+
+.pm-hint {
+  font-size: 11px;
+  color: var(--muted);
+  max-width: 200px;
+}
+
 /* ---- Skins ---- */
 .skin-select {
   appearance: none;
