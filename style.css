@@ -397,3 +397,175 @@ kbd {
 [data-skin="neon"] #next-canvas {
   background: #000;
 }
+
+/* ---- Records ---- */
+:root {
+  --record-highlight-bg: rgba(255, 213, 79, 0.18);
+  --record-highlight-text: #ffd54f;
+}
+
+[data-theme="light"] {
+  --record-highlight-bg: rgba(249, 168, 37, 0.2);
+  --record-highlight-text: #b26a00;
+}
+
+.records-gameover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.records-gameover[hidden],
+.records-gameover [hidden] {
+  display: none;
+}
+
+.start-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--accent);
+}
+
+.records-heading {
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 600;
+  color: var(--label);
+}
+
+.new-record-msg {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--record-highlight-text);
+}
+
+.record-form {
+  display: flex;
+  gap: 6px;
+}
+
+.record-form input {
+  width: 150px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--kbd-border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  user-select: text;
+}
+
+.record-form input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.records-table {
+  width: 280px;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.records-table th {
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  color: var(--label);
+  text-transform: uppercase;
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.records-table td {
+  padding: 4px 6px;
+  color: var(--text);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.records-table th:nth-child(2),
+.records-table td:nth-child(2) {
+  text-align: left;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.records-table th:nth-child(3),
+.records-table td:nth-child(3),
+.records-table th:nth-child(4),
+.records-table td:nth-child(4) {
+  text-align: right;
+}
+
+.records-table tr.highlight td {
+  background: var(--record-highlight-bg);
+  color: var(--record-highlight-text);
+  font-weight: 700;
+}
+
+.records-table td.records-empty {
+  text-align: center;
+  color: var(--muted);
+  font-family: inherit;
+  padding: 10px 6px;
+}
+
+.records-stats {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.records-stats span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.records-btn {
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+.records-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.records-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.records-btn-lg {
+  margin-top: 8px;
+  padding: 10px 28px;
+  font-size: 14px;
+}
+
+.records-btn-link {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.records-hint {
+  font-size: 11px;
+  color: var(--muted);
+}
