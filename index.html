@@ -48,6 +48,11 @@
             <span id="theme-text">Oscuro</span>
           </button>
         </div>
+
+        <div class="panel-section">
+          <label class="label" for="skin-select">SKIN</label>
+          <select id="skin-select" class="skin-select" aria-label="Skin visual"></select>
+        </div>
       </aside>
     </div>
 
@@ -83,6 +88,31 @@
         <button id="play-btn" class="records-btn records-btn-lg" type="button">Jugar</button>
         <button id="reset-records-btn" class="records-btn-link" type="button">Resetear records</button>
         <p class="records-hint">Pulsa <kbd>Space</kbd> o <kbd>Enter</kbd> para jugar</p>
+      </div>
+    </div>
+
+    <div id="pause-menu" class="overlay pause-menu hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="overlay-box pause-box">
+        <p id="pause-title" class="pause-title">PAUSA</p>
+        <button type="button" class="menu-btn" id="pm-resume">Reanudar</button>
+        <button type="button" class="menu-btn" id="pm-restart">Reiniciar</button>
+        <button type="button" class="menu-btn menu-btn-secondary" id="pm-controls-btn" aria-expanded="false" aria-controls="pm-controls">Ver controles</button>
+        <ul id="pm-controls" class="pm-controls hidden">
+          <li><kbd>←</kbd><kbd>→</kbd> mover</li>
+          <li><kbd>↑</kbd><kbd>X</kbd> rotar</li>
+          <li><kbd>↓</kbd> bajar</li>
+          <li><kbd>Space</kbd> caída</li>
+          <li><kbd>P</kbd><kbd>Esc</kbd> pausa</li>
+        </ul>
+        <div class="pm-level">
+          <span class="label">NIVEL INICIAL</span>
+          <div class="pm-level-row">
+            <button type="button" class="pm-step" id="pm-level-dec" aria-label="Bajar nivel inicial">−</button>
+            <span class="pm-level-value" id="pm-level-value" aria-live="polite">1</span>
+            <button type="button" class="pm-step" id="pm-level-inc" aria-label="Subir nivel inicial">+</button>
+          </div>
+          <span class="pm-hint">Se aplica al pulsar Reiniciar o en la próxima partida</span>
+        </div>
       </div>
     </div>
   </div>

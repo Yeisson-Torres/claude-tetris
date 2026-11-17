@@ -26,6 +26,150 @@ const LIGHT_COLORS = [
   '#fb8c00', // L
 ];
 
+// ===== Skins =====
+// Cada skin define su paleta (oscura y clara), fondo opcional del tablero,
+// color de rejilla opcional y su propia función de dibujo de bloque.
+// drawBlock(context, px, py, size, color, alpha) recibe coordenadas en píxeles.
+
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+// amt > 0 aclara hacia blanco, amt < 0 oscurece hacia negro (rango -1..1)
+function shade(hex, amt, alpha = 1) {
+  const [r, g, b] = hexToRgb(hex);
+  const t = amt < 0 ? 0 : 255;
+  const p = Math.abs(amt);
+  const mix = v => Math.round(v + (t - v) * p);
+  return `rgba(${mix(r)}, ${mix(g)}, ${mix(b)}, ${alpha})`;
+}
+
+function roundRectPath(context, x, y, w, h, r) {
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  context.beginPath();
+  context.moveTo(x + r, y);
+  context.lineTo(x + w - r, y);
+  context.arcTo(x + w, y, x + w, y + r, r);
+  context.lineTo(x + w, y + h - r);
+  context.arcTo(x + w, y + h, x + w - r, y + h, r);
+  context.lineTo(x + r, y + h);
+  context.arcTo(x, y + h, x, y + h - r, r);
+  context.lineTo(x, y + r);
+  context.arcTo(x, y, x + r, y, r);
+  context.closePath();
+}
+
+const SKINS = {
+  retro: {
+    name: 'Retro',
+    colors: COLORS,
+    lightColors: LIGHT_COLORS,
+    drawBlock(context, px, py, size, color, alpha) {
+      context.globalAlpha = alpha;
+      context.fillStyle = color;
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      // highlight
+      context.fillStyle = cssVar('--block-shine');
+      context.fillRect(px + 1, py + 1, size - 2, 4);
+      context.globalAlpha = 1;
+    },
+  },
+
+  neon: {
+    name: 'Neón',
+    colors: [null, '#00f0ff', '#fff200', '#d400ff', '#39ff14', '#ff073a', '#2979ff', '#ff8c00'],
+    lightColors: [null, '#00f0ff', '#fff200', '#d400ff', '#39ff14', '#ff073a', '#2979ff', '#ff8c00'],
+    boardBg: '#000',
+    gridColor: '#101018',
+    drawBlock(context, px, py, size, color, alpha) {
+      context.save();
+      context.globalAlpha = alpha;
+      context.shadowColor = color;
+      context.shadowBlur = 12;
+      context.fillStyle = shade(color, -0.6, 0.45);
+      context.fillRect(px + 3, py + 3, size - 6, size - 6);
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      context.strokeRect(px + 3, py + 3, size - 6, size - 6);
+      // núcleo brillante
+      context.shadowBlur = 0;
+      context.fillStyle = shade(color, 0.5, 0.35);
+      context.fillRect(px + 7, py + 7, size - 14, 2);
+      context.restore();
+    },
+  },
+
+  pastel: {
+    name: 'Pastel',
+    colors: [null, '#a8e6ef', '#fdf1a6', '#d7b8f3', '#b9f2c4', '#f8b4c0', '#b5d0ff', '#ffd1a3'],
+    lightColors: [null, '#8fd8e3', '#f7e07f', '#c7a2ee', '#9fe3ad', '#f49aab', '#9cbcf7', '#ffbe85'],
+    drawBlock(context, px, py, size, color, alpha) {
+      const r = Math.max(2, Math.round(size * 0.22));
+      context.save();
+      context.globalAlpha = alpha;
+      roundRectPath(context, px + 2, py + 2, size - 4, size - 4, r);
+      context.fillStyle = color;
+      context.fill();
+      context.lineWidth = 1.5;
+      context.strokeStyle = shade(color, 0.55);
+      context.stroke();
+      // brillo suave arriba
+      roundRectPath(context, px + 6, py + 5, size - 12, Math.max(2, Math.round(size * 0.18)), r / 2);
+      context.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      context.fill();
+      context.restore();
+    },
+  },
+
+  pixel: {
+    name: 'Pixel art',
+    colors: [null, '#3cbcfc', '#f8d878', '#b853f8', '#58d854', '#f83800', '#6888fc', '#fca044'],
+    lightColors: [null, '#0078f8', '#f8b800', '#9878f8', '#00a800', '#d82800', '#0058f8', '#e45c10'],
+    drawBlock(context, px, py, size, color, alpha) {
+      const x = Math.round(px), y = Math.round(py), s = Math.round(size);
+      const p = Math.max(1, Math.floor(s / 10)); // tamaño de "píxel"
+      context.save();
+      context.globalAlpha = alpha;
+      // contorno oscuro + relleno base
+      context.fillStyle = shade(color, -0.55);
+      context.fillRect(x, y, s, s);
+      context.fillStyle = color;
+      context.fillRect(x + p, y + p, s - 2 * p, s - 2 * p);
+      // luz arriba/izquierda
+      context.fillStyle = shade(color, 0.55);
+      context.fillRect(x + p, y + p, s - 3 * p, p);
+      context.fillRect(x + p, y + p, p, s - 3 * p);
+      // sombra abajo/derecha
+      context.fillStyle = shade(color, -0.35);
+      context.fillRect(x + 2 * p, y + s - 2 * p, s - 3 * p, p);
+      context.fillRect(x + s - 2 * p, y + 2 * p, p, s - 3 * p);
+      // textura: patrón de píxeles en damero disperso
+      const light = shade(color, 0.3);
+      const dark = shade(color, -0.2);
+      for (let iy = 3 * p, k = 0; iy < s - 3 * p; iy += 2 * p, k++) {
+        for (let ix = 3 * p + (k % 2) * p; ix < s - 3 * p; ix += 3 * p) {
+          context.fillStyle = (ix + iy) % (4 * p) === 0 ? light : dark;
+          context.fillRect(x + ix, y + iy, p, p);
+        }
+      }
+      context.restore();
+    },
+  },
+};
+
+const DEFAULT_SKIN = 'retro';
+let currentSkin = DEFAULT_SKIN;
+
+function activeSkin() {
+  return SKINS[currentSkin] || SKINS[DEFAULT_SKIN];
+}
+
+function boardBackground() {
+  return activeSkin().boardBg || cssVar('--surface');
+}
+// ===== /Skins =====
+
 const PIECES = [
   null,
   [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
@@ -117,7 +261,7 @@ function clearLines() {
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
-    level = Math.floor(lines / 10) + 1;
+    level = Math.max(gameStartLevel, Math.floor(lines / 10) + 1);
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
     updateHUD();
   }
@@ -178,18 +322,14 @@ function cssVar(name) {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = (isLight() ? LIGHT_COLORS : COLORS)[colorIndex];
-  context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
-  context.fillStyle = cssVar('--block-shine');
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  const skin = activeSkin();
+  const color = (isLight() ? skin.lightColors : skin.colors)[colorIndex];
+  skin.drawBlock(context, x * size, y * size, size, color, alpha ?? 1);
   context.globalAlpha = 1;
 }
 
 function drawGrid() {
-  ctx.strokeStyle = cssVar('--grid');
+  ctx.strokeStyle = activeSkin().gridColor || cssVar('--grid');
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -206,7 +346,8 @@ function drawGrid() {
 }
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = boardBackground();
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawGrid();
 
   // board
@@ -229,7 +370,8 @@ function draw() {
 
 function drawNext() {
   const NB = 30;
-  nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+  nextCtx.fillStyle = boardBackground();
+  nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
   const shape = next.shape;
   const offX = Math.floor((4 - shape[0].length) / 2);
   const offY = Math.floor((4 - shape.length) / 2);
@@ -251,13 +393,14 @@ function togglePause() {
   if (gameOver) return;
   paused = !paused;
   if (!paused) {
+    hidePauseMenu();
+    dropAccum = 0;
     lastTime = performance.now();
+    inputBlockedUntil = lastTime + RESUME_INPUT_DELAY;
     loop(lastTime);
   } else {
     cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
-    overlay.classList.remove('hidden');
+    showPauseMenu();
   }
 }
 
@@ -282,10 +425,12 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  gameStartLevel = startLevel; // fijado por partida; cambios en el menú aplican al reiniciar
+  level = gameStartLevel;
   paused = false;
   gameOver = false;
-  dropInterval = 1000;
+  hidePauseMenu();
+  dropInterval = Math.max(100, 1000 - (level - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
@@ -300,8 +445,22 @@ function init() {
 document.addEventListener('keydown', e => {
   if (e.target instanceof HTMLInputElement) return; // escribiendo un nombre
   if (handleStartScreenKey(e)) return;
-  if (e.code === 'KeyP') { togglePause(); return; }
-  if (paused || gameOver) return;
+  if (e.target instanceof HTMLSelectElement) return; // no jugar mientras se usa un <select>
+  if (e.code === 'KeyP' || e.code === 'Escape') {
+    e.preventDefault();
+    if (!e.repeat) togglePause();
+    return;
+  }
+  if (paused) {
+    // Menú abierto: ninguna tecla de juego mueve la pieza.
+    if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
+    return;
+  }
+  if (gameOver) return;
+  if (performance.now() < inputBlockedUntil) {
+    if (e.code === 'Space') e.preventDefault();
+    return;
+  }
   switch (e.code) {
     case 'ArrowLeft':
       if (!collide(current.shape, current.x - 1, current.y)) current.x--;
@@ -471,7 +630,8 @@ function renderStats(comboEl, linesEl2, records) {
 }
 
 function drawEmptyBoard() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = boardBackground();
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawGrid();
 }
 
@@ -590,5 +750,131 @@ resetRecordsBtn.addEventListener('click', () => {
 });
 
 restartBtn.addEventListener('click', () => restartBtn.blur());
+
+// En la pantalla de inicio el tablero vacío también sigue al tema.
+themeToggle.addEventListener('click', () => { if (onStartScreen) drawEmptyBoard(); });
+
+// ===== Menú de pausa =====
+const START_LEVEL_KEY = 'tetris.startLevel';
+const MIN_START_LEVEL = 1;
+const MAX_START_LEVEL = 10;
+const RESUME_INPUT_DELAY = 150; // ms sin aceptar teclas de juego tras reanudar
+
+const pauseMenu = document.getElementById('pause-menu');
+const pmResume = document.getElementById('pm-resume');
+const pmRestart = document.getElementById('pm-restart');
+const pmControlsBtn = document.getElementById('pm-controls-btn');
+const pmControls = document.getElementById('pm-controls');
+const pmLevelDec = document.getElementById('pm-level-dec');
+const pmLevelInc = document.getElementById('pm-level-inc');
+const pmLevelValue = document.getElementById('pm-level-value');
+
+let inputBlockedUntil = 0;
+let gameStartLevel = 1;
+
+function loadStartLevel() {
+  try {
+    const v = parseInt(localStorage.getItem(START_LEVEL_KEY), 10);
+    if (Number.isInteger(v) && v >= MIN_START_LEVEL && v <= MAX_START_LEVEL) return v;
+  } catch (err) { /* localStorage no disponible */ }
+  return MIN_START_LEVEL;
+}
+
+function saveStartLevel(v) {
+  try {
+    localStorage.setItem(START_LEVEL_KEY, String(v));
+  } catch (err) { /* localStorage no disponible */ }
+}
+
+let startLevel = loadStartLevel();
+
+function renderStartLevel() {
+  pmLevelValue.textContent = startLevel;
+  pmLevelDec.disabled = startLevel <= MIN_START_LEVEL;
+  pmLevelInc.disabled = startLevel >= MAX_START_LEVEL;
+}
+
+function setStartLevel(v) {
+  startLevel = Math.min(MAX_START_LEVEL, Math.max(MIN_START_LEVEL, v));
+  saveStartLevel(startLevel);
+  renderStartLevel();
+}
+
+function setControlsExpanded(expanded) {
+  pmControls.classList.toggle('hidden', !expanded);
+  pmControlsBtn.setAttribute('aria-expanded', String(expanded));
+  pmControlsBtn.textContent = expanded ? 'Ocultar controles' : 'Ver controles';
+}
+
+function showPauseMenu() {
+  renderStartLevel();
+  pauseMenu.classList.remove('hidden');
+  pmResume.focus({ preventScroll: true }); // foco dentro del diálogo (Enter reanuda)
+}
+
+function hidePauseMenu() {
+  pauseMenu.classList.add('hidden');
+  setControlsExpanded(false);
+  if (pauseMenu.contains(document.activeElement)) document.activeElement.blur();
+}
+
+// Envuelve un handler para que el botón pierda el foco tras el click
+// (así Space/Enter no pueden volver a activarlo).
+function menuAction(fn) {
+  return e => {
+    e.currentTarget.blur();
+    fn();
+  };
+}
+
+pmResume.addEventListener('click', menuAction(() => { if (paused) togglePause(); }));
+pmRestart.addEventListener('click', menuAction(() => {
+  init();
+  inputBlockedUntil = performance.now() + RESUME_INPUT_DELAY;
+}));
+pmControlsBtn.addEventListener('click', menuAction(() => {
+  setControlsExpanded(pmControls.classList.contains('hidden'));
+}));
+pmLevelDec.addEventListener('click', menuAction(() => setStartLevel(startLevel - 1)));
+pmLevelInc.addEventListener('click', menuAction(() => setStartLevel(startLevel + 1)));
+
+renderStartLevel();
+
+// ===== Skins: selector =====
+const SKIN_KEY = 'tetris.skin';
+const skinSelect = document.getElementById('skin-select');
+
+function loadSkin() {
+  try {
+    const saved = localStorage.getItem(SKIN_KEY);
+    if (saved && Object.prototype.hasOwnProperty.call(SKINS, saved)) return saved;
+  } catch (_) { /* localStorage no disponible */ }
+  return DEFAULT_SKIN;
+}
+
+function applySkin(key) {
+  currentSkin = Object.prototype.hasOwnProperty.call(SKINS, key) ? key : DEFAULT_SKIN;
+  document.documentElement.dataset.skin = currentSkin;
+  if (skinSelect) skinSelect.value = currentSkin;
+  try { localStorage.setItem(SKIN_KEY, currentSkin); } catch (_) { /* ignorar */ }
+  if (board && current && next) { draw(); drawNext(); }
+  else if (onStartScreen) drawEmptyBoard();
+}
+
+if (skinSelect) {
+  for (const [key, skin] of Object.entries(SKINS)) {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = skin.name;
+    skinSelect.appendChild(opt);
+  }
+  skinSelect.addEventListener('change', () => {
+    applySkin(skinSelect.value);
+    skinSelect.blur(); // evita que las flechas cambien el skin durante el juego
+  });
+}
+
+applySkin(loadSkin());
+// ===== /Skins: selector =====
 
 showStartScreen();
